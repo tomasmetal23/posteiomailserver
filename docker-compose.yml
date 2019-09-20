@@ -1,0 +1,46 @@
+version: '3'
+services:                                                                                                                  
+     posteio:                                                                                                            
+             image: analogic/poste.io                                                                                    
+             container_name: poste.io                                                                                    
+             hostname: mail.ejemplo.com                                                                            
+             restart: always
+             ports:                
+                     #¡ATENCION, CUIDADO! no recomiendo el puerto 25, genera muchas conexiones invalidas y spam
+                     - '465:465' # SMTPS - ¡RECOMENDADO! este es el puerto que recomiendo para evitar el spam funciona muy bien.
+                     - '81:80'  # HTTP - redirect to https (see options) and authentication for Let's encrypt service  
+                     - '110:110'  #  POP3 - standard protocol for accessing mailbox, STARTTLS is required before client auth                                                                                                                   
+                     - '143:143'  #  IMAP - standard protocol for accessing mailbox, STARTTLS is required before client auth
+                     - '8443:443'  #  HTTPS - access to administration or webmail client                                
+                     - '587:587'  #  MSA - SMTP  ¡CUIDADO!  no lo recomiendo, lo use un momento y los spammers podian acceder a el por telnet y enviar mails
+                     - '993:993'  #  IMAPS - alternative port for IMAP encrypted since connection                        
+                     - '995:995'  #  POP3S - encrypted POP3 since connections                                            
+             environment:                                                                                               
+                     - HOSTNAME=mail.ejemplo.com
+                     - HTTPS=OFF                                                                                         
+                       #- DISABLE_CLAMAV=TRUE                                                                            
+                     - LETSENCRYPT_EMAIL=postmaster@ejemplo.com                                                    
+                     - LETSENCRYPT_HOST=mail.ejemplo.com                                                                  
+                     - VIRTUAL_HOST=mail.ejemplo.com                                                            
+             volumes:                                                                                                    
+                     - './containers/poste.io/data:/data'                                                                
+                     - '/etc/localtime:/etc/localtime:ro'                                                                
+             labels:                                                                                                     
+                     - "traefik.leposte.backend=leposte"                                                                 
+                     - "traefik.leposte.frontend.rule=HostRegexp:ejemplo.com,{subdomain:[a-z]*}.ejemplo.com;PathPrefix:/.well-known/"                                                                                                      
+                     - "traefik.leposte.port=80"                                                                         
+                     - "traefik.leposte.protocol=http"                                                                   
+                     - "traefik.leposte.frontend.entryPoints=http"                                                       
+                     - "traefik.webmail.backend=webmail"                                                                 
+                     - "traefik.webmail.frontend.rule=Host:webmail.ejemplo.com"                                       
+                     - "traefik.webmail.port=80"                                                                         
+                     - "traefik.webmail.frontend.headers.SSLRedirect=true"                                               
+                     - "traefik.admin.backend=posteio"                                                                   
+                     - "traefik.admin.frontend.rule=Host:posteio.ejemplo.com"                                         
+                     - "traefik.admin.frontend.redirect.regex=posteio.ejemplo.com/webmail"                            
+                     - "traefik.admin.frontend.redirect.replacement=posteio.ejemplo.com/admin/"                       
+                     - "traefik.admin.port=80"                                                                           
+                     - "traefik.admin.frontend.headers.SSLRedirect=true"
+              
+     
+
