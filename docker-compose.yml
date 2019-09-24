@@ -6,7 +6,7 @@ services:
              hostname: mail.ejemplo.com                                                                            
              restart: always
              ports:                
-                     #¡ATENCION, CUIDADO! no recomiendo el puerto 25, genera muchas conexiones invalidas y spam
+                     - '25:25' #smtp es necesario que este filtrado este puerto, que pueda recibir mails pero no enviar.
                      - '465:465' # SMTPS - ¡RECOMENDADO! este es el puerto que recomiendo para evitar el spam funciona muy bien.
                      - '81:80'  # HTTP - redirect to https (see options) and authentication for Let's encrypt service  
                      - '110:110'  #  POP3 - standard protocol for accessing mailbox, STARTTLS is required before client auth                                                                                                                   
